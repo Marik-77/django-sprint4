@@ -4,6 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from .models import MyUser
 
+
 class MyUserAdmin(UserAdmin):
     """Кастомный UserAdmin с отображением количества постов."""
 
@@ -14,3 +15,4 @@ class MyUserAdmin(UserAdmin):
     list_display = UserAdmin.list_display + ('post_count',)
 
 admin.site.register(MyUser, MyUserAdmin)
+
