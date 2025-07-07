@@ -82,10 +82,10 @@ class PostDetailView(DetailView):
         post = get_object_or_404(Post, id=post_id)
         author = post.author == self.request.user
         return sql_filters(
-            Post.objects.select_related('category',
-                                        'location',
-                                        'author').filter(id=post_id),
-                                        author
+            Post.objects.select_related(
+                'category', 'location', 'author'
+            ).filter(id=post_id),
+            author
         ).annotate(comment_count=Count("comments"))
 
     def get_context_data(self, **kwargs):
