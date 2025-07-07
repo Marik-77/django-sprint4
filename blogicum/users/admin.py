@@ -14,5 +14,5 @@ class MyUserAdmin(UserAdmin):
 
     list_display = UserAdmin.list_display + ('post_count',)
 
-admin.site.register(MyUser, MyUserAdmin)
 
+admin.site.register(MyUser, MyUserAdmin)
