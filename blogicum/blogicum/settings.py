@@ -1,6 +1,6 @@
-from pathlib import Path 
- 
-# Build paths inside the project like this: BASE_DIR / 'subdir'. 
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-fn41u7c-1z+jwd#dvpeo0m1j-w^s5si#@!*x&4zx-!1!2u@+=h'
@@ -108,21 +108,21 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', 
-    }, 
-    { 
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', 
-    }, 
-] 
- 
- 
-# Internationalization 
-# https://docs.djangoproject.com/en/3.2/topics/i18n/ 
- 
-LANGUAGE_CODE = 'ru-RU' 
- 
-TIME_ZONE = 'UTC' 
- 
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+
+# Internationalization
+# https://docs.djangoproject.com/en/3.2/topics/i18n/
+
+LANGUAGE_CODE = 'ru-RU'
+
+TIME_ZONE = 'UTC'
+
 USE_I18N = True
 
 USE_L10N = True
@@ -130,15 +130,14 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images) 
-# https://docs.djangoproject.com/en/3.2/howto/static-files/ 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
-] 
+]
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field 
-
+# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
