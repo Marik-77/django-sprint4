@@ -82,7 +82,10 @@ class PostDetailView(DetailView):
         post = get_object_or_404(Post, id=post_id)
         author = post.author == self.request.user
         return sql_filters(
-            Post.objects.select_related('category', 'location', 'author').filter(id=post_id),
+            Post.objects.select_related('category',
+                                        'location',
+                                        'author')
+                                        .filter(id=post_id),
             author
         ).annotate(comment_count=Count("comments"))
 
@@ -136,7 +139,8 @@ class ProfileView(ListView):
         qs = Post.objects.select_related(
             'category', 'location', 'author'
         ).filter(author__username=self.kwargs['username'])
-        return sql_filters(qs, author).annotate(comment_count=Count("comments")).order_by('-pub_date')
+        return sql_filters(qs, author).annotate(
+            comment_count=Count("comments")).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -193,7 +197,8 @@ class AuthorRedirectMixin:
         user_test_result = self.get_test_func()()
         if not self.request.user.is_authenticated or not user_test_result:
             return redirect(
-                reverse('blog:post_detail', kwargs={'post_id': self.kwargs['post_id']})
+                reverse('blog:post_detail',
+                        kwargs={'post_id': self.kwargs['post_id']})
             )
         return super().dispatch(request, *args, **kwargs)
 

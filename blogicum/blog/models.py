@@ -50,7 +50,9 @@ class Category(BaseModel):
     уникальное поле.
     """
 
-    title = models.CharField(max_length=TITLE_MAX_LENGTH, verbose_name='Заголовок')
+    title = models.CharField(
+        max_length=TITLE_MAX_LENGTH,
+        verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
     slug = models.SlugField(
         max_length=SLUG_MAX_LENGTH,
@@ -74,7 +76,9 @@ class Location(BaseModel):
     name - отображает название места, обязательное поле, содержит строку.
     """
 
-    name = models.CharField(max_length=NAME_MAX_LENGTH, verbose_name='Название места')
+    name = models.CharField(
+        max_length=NAME_MAX_LENGTH,
+        verbose_name='Название места')
 
     class Meta:
         verbose_name = 'местоположение'
@@ -98,7 +102,9 @@ class Post(BaseModel):
     устанавливается NULL при удалении связанных объектов.
     """
 
-    title = models.CharField(max_length=TITLE_MAX_LENGTH, verbose_name='Заголовок')
+    title = models.CharField(
+        max_length=TITLE_MAX_LENGTH,
+        verbose_name='Заголовок')
     text = models.TextField(verbose_name='Текст')
     pub_date = models.DateTimeField(
         help_text=('Если установить дату и время в будущем — можно делать '
