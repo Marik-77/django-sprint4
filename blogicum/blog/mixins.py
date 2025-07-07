@@ -1,7 +1,8 @@
 """Дополнительные миксины."""
-from blog.models import Comment
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.urls import reverse
+
+from blog.models import Comment
 
 
 class OnlyAuthorMixin(UserPassesTestMixin):

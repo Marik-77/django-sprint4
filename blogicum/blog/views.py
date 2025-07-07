@@ -1,5 +1,4 @@
 """Обработка запросов."""
-from blog.models import Category, Post
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -8,10 +7,12 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
-from users.forms import CustomUserChangeForm
+
+from blog.models import Category, Post
+from users.forms import UserChangeForm
 
 from .forms import CommentForm, PostForm
-from .mixins import OnlyAuthorMixin, CommentMixin
+from .mixins import CommentMixin, OnlyAuthorMixin
 from .utils import sql_filters
 
 NUMBER_OF_POSTS_PER_PAGE = 10
@@ -46,6 +47,13 @@ class DeleteComment(CommentMixin, OnlyAuthorMixin, DeleteView):
     pass
 
 
+def get_post_queryset():
+    """Базовый запрос для постов с нужными select_related и аннотацией."""
+    return sql_filters(
+        Post.objects.select_related('category', 'location', 'author')
+    ).annotate(comment_count=Count("comments"))
+
+
 class PostListView(ListView):
     """Cтраница с постами."""
 
@@ -54,10 +62,7 @@ class PostListView(ListView):
     template_name = 'blog/index.html'
 
     def get_queryset(self):
-
-        return sql_filters(Post.objects.select_related(
-            'category', 'location', 'author',)).annotate(
-                comment_count=Count("comments")).order_by('-pub_date')
+        return get_post_queryset().order_by('-pub_date')
 
 
 class PostDetailView(DetailView):
@@ -73,14 +78,13 @@ class PostDetailView(DetailView):
         Если пользователь и автор профиля страницы совпадают, то пользователь
         может просматривать неопубликованные посты.
         """
-        author = False
-        if Post.objects.filter(
-            id=self.kwargs['post_id'], author=self.request.user.id
-        ):
-            author = True
-        return sql_filters(Post.objects.select_related(
-            'category', 'location', 'author'
-        ).filter(id=self.kwargs['post_id']), author)
+        post_id = self.kwargs[self.pk_url_kwarg]
+        post = get_object_or_404(Post, id=post_id)
+        author = post.author == self.request.user
+        return sql_filters(
+            Post.objects.select_related('category', 'location', 'author').filter(id=post_id),
+            author
+        ).annotate(comment_count=Count("comments"))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -101,10 +105,9 @@ class CategoryPostsView(ListView):
     template_name = 'blog/category.html'
 
     def get_queryset(self):
-        return sql_filters(Post.objects.select_related(
-            'category', 'location', 'author'
-        ).filter(category__slug=self.kwargs['category_slug'])).annotate(
-            comment_count=Count("comments")).order_by('-pub_date')
+        return get_post_queryset().filter(
+            category__slug=self.kwargs['category_slug']
+        ).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -127,17 +130,13 @@ class ProfileView(ListView):
     template_name = 'blog/profile.html'
 
     def get_queryset(self):
-        """Запрос к бд с фильрами.
-        Если пользователь и автор профиля страницы совпадают, то пользователь
-        может просматривать неопубликованные посты.
-        """
         author = False
         if str(self.kwargs['username']) == str(self.request.user):
             author = True
-        return sql_filters(Post.objects.select_related(
+        qs = Post.objects.select_related(
             'category', 'location', 'author'
-        ).filter(author__username=self.kwargs['username']).annotate(
-            comment_count=Count("comments")).order_by('-pub_date'), author)
+        ).filter(author__username=self.kwargs['username'])
+        return sql_filters(qs, author).annotate(comment_count=Count("comments")).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -152,7 +151,7 @@ class EditProfilView(UserPassesTestMixin, UpdateView):
 
     model = User
     template_name = 'blog/user.html'
-    form_class = CustomUserChangeForm
+    form_class = UserChangeForm
     success_url = reverse_lazy('blog:index')
     pk_url_kwarg = 'post_id'
 
@@ -187,23 +186,25 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return reverse('blog:profile', kwargs={'username': self.request.user})
 
 
-class PostUpdateView(OnlyAuthorMixin, UpdateView):
+class AuthorRedirectMixin:
+    """Миксин для перенаправления неавтора на detail-представление поста."""
+
+    def dispatch(self, request, *args, **kwargs):
+        user_test_result = self.get_test_func()()
+        if not self.request.user.is_authenticated or not user_test_result:
+            return redirect(
+                reverse('blog:post_detail', kwargs={'post_id': self.kwargs['post_id']})
+            )
+        return super().dispatch(request, *args, **kwargs)
+
+
+class PostUpdateView(AuthorRedirectMixin, OnlyAuthorMixin, UpdateView):
     """Страница редактирования поста."""
 
     model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
     pk_url_kwarg = 'post_id'
-
-    def dispatch(self, request, *args, **kwargs):
-        """Перенаправление пользователя не прошедшего проверку."""
-        user_test_result = self.get_test_func()()
-
-        if not self.request.user.is_authenticated or not user_test_result:
-            return redirect(reverse(
-                'blog:post_detail', kwargs={'post_id': self.kwargs['post_id']})
-            )
-        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse(
@@ -215,6 +216,9 @@ class PostDeleteView(OnlyAuthorMixin, DeleteView):
     """Страница удаления поста."""
 
     model = Post
+    template_name = 'blog/create.html'
+    pk_url_kwarg = 'post_id'
+    success_url = reverse_lazy('blog:index')
     template_name = 'blog/create.html'
     pk_url_kwarg = 'post_id'
     success_url = reverse_lazy('blog:index')

@@ -28,7 +28,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, reverse_lazy
 from django.views.generic.edit import CreateView
-from users.forms import CustomUserCreationForm
+
+from users.forms import UserCreationForm
 
 handler404 = 'pages.views.page_not_found'
 handler500 = 'pages.views.page_server_error'
@@ -42,7 +43,7 @@ urlpatterns = [
         'auth/registration/',
         CreateView.as_view(
             template_name='registration/registration_form.html',
-            form_class=CustomUserCreationForm,
+            form_class=UserCreationForm,
             success_url=reverse_lazy('blog:index'),
         ),
         name='registration',

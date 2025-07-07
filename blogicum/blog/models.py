@@ -10,6 +10,11 @@ from django.urls import reverse
 
 User = get_user_model()
 
+TITLE_MAX_LENGTH = 256
+NAME_MAX_LENGTH = 256
+SLUG_MAX_LENGTH = 50
+TEXT_PREVIEW_LENGTH = 50
+
 
 class BaseModel(models.Model):
     """Абстрактная модель.
@@ -37,7 +42,7 @@ class BaseModel(models.Model):
 
 class Category(BaseModel):
     """Модель с категориями.
-    Насследуестя от абстрактной модели BaseModel (получает все ее атрибуты).
+    Наследуется от абстрактной модели BaseModel (получает все ее атрибуты).
     1) title - отображает название категории, обязательное поле, содержит
     строку; 2) description - отображает описание категории, обязательное поле,
     содержит текст; 3) slug - идентификатор страницы для URL, обязательное
@@ -45,9 +50,10 @@ class Category(BaseModel):
     уникальное поле.
     """
 
-    title = models.CharField(max_length=256, verbose_name='Заголовок')
+    title = models.CharField(max_length=TITLE_MAX_LENGTH, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
     slug = models.SlugField(
+        max_length=SLUG_MAX_LENGTH,
         unique=True,
         help_text=('Идентификатор страницы для URL; разрешены символы латиницы'
                    ', цифры, дефис и подчёркивание.'),
@@ -55,13 +61,12 @@ class Category(BaseModel):
     )
 
     class Meta:
-
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
+        ordering = ('title',)
 
     def __str__(self):
-
-        return self.title[:50]
+        return self.title[:TEXT_PREVIEW_LENGTH]
 
 
 class Location(BaseModel):
@@ -69,16 +74,15 @@ class Location(BaseModel):
     name - отображает название места, обязательное поле, содержит строку.
     """
 
-    name = models.CharField(max_length=256, verbose_name='Название места')
+    name = models.CharField(max_length=NAME_MAX_LENGTH, verbose_name='Название места')
 
     class Meta:
-
         verbose_name = 'местоположение'
         verbose_name_plural = 'Местоположения'
+        ordering = ('name',)
 
     def __str__(self):
-
-        return self.name[:50]
+        return self.name[:TEXT_PREVIEW_LENGTH]
 
 
 class Post(BaseModel):
@@ -94,7 +98,7 @@ class Post(BaseModel):
     устанавливается NULL при удалении связанных объектов.
     """
 
-    title = models.CharField(max_length=256, verbose_name='Заголовок')
+    title = models.CharField(max_length=TITLE_MAX_LENGTH, verbose_name='Заголовок')
     text = models.TextField(verbose_name='Текст')
     pub_date = models.DateTimeField(
         help_text=('Если установить дату и время в будущем — можно делать '
@@ -123,15 +127,15 @@ class Post(BaseModel):
     image = models.ImageField('Фото', upload_to='posts_images', blank=True)
 
     class Meta:
-
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
+        ordering = ('-pub_date',)
 
     def get_absolute_url(self):
         return reverse('blog:post_detail', kwargs={'id': self.id})
 
     def __str__(self):
-        return self.title[:50]
+        return self.title[:TEXT_PREVIEW_LENGTH]
 
 
 class Comment(models.Model):
@@ -155,10 +159,9 @@ class Comment(models.Model):
     )
 
     class Meta:
-
         ordering = ('created_at',)
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return self.text[:50]
+        return self.text[:TEXT_PREVIEW_LENGTH]

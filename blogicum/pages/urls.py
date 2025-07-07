@@ -6,6 +6,7 @@ name, которое будет использовано в ссылках html 
 name.
 """
 from django.urls import path
+
 from pages import views
 
 app_name = 'pages'

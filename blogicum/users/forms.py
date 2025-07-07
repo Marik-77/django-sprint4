@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 User = get_user_model()
 
 
-class CustomUserCreationForm(UserCreationForm):
+class UserCreationForm(UserCreationForm):
     """Кастомная форма для создания пользователя.
     Наследуется от стандартной формы, изменяет модель пользователя на
     кастомную.
@@ -15,7 +15,7 @@ class CustomUserCreationForm(UserCreationForm):
         fields = ('username', 'email')
 
 
-class CustomUserChangeForm(UserChangeForm):
+class UserChangeForm(UserChangeForm):
     """Кастомная форма для изменения пользователя.
     Наследуется от стандартной формы, изменяет модель пользователя на
     кастомную.
